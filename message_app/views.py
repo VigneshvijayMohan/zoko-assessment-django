@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from .kafka_producer import produce_message
 from .kafka_worker import consume_messages
@@ -21,8 +22,12 @@ class MessagesView(APIView):
             return Response({"error": "Missing user1 or user2 in query params"}, status=400)
 
         messages = Message.objects.filter(sender_id = user1, receiver_id = user2).order_by("timestamp") 
-        serialized_data = MessageSerializers(messages, many = True)
-        return Response(serialized_data.data)
+        paginator = PageNumberPagination()
+
+        paginated_messages = paginator.paginate_queryset(messages, request)
+        serializer = MessageSerializers(paginated_messages, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     def post(self, request):
         data = request.data
         sender_id = data.get("sender_id")
