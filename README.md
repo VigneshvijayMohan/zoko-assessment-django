@@ -63,7 +63,7 @@ Request Body:
 }
 
 ✅ Message is pushed to Kafka and processed asynchronously.
-
+![alt text](image-1.png)
 ---
 
 ### 2️⃣ Retrieve Conversation History
@@ -73,7 +73,7 @@ Headers: Authorization: Bearer <JWT>
 
 
 ✅ Returns paginated list of messages sorted by timestamp.
-
+![alt text](image.png)
 ---
 
 ### 3️⃣ Mark a Message as Read
@@ -84,3 +84,4 @@ Headers: Authorization: Bearer <JWT>
 
 Response:
 { "status": "read" }
+![alt text](image-2.png)
