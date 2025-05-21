@@ -2,12 +2,17 @@ from .models import Message
 from .serializers import MessageSerializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from .kafka_producer import produce_message
 from .kafka_worker import consume_messages
 # Create your views here.
 
 class MessagesView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         user1 = request.GET.get("user1")
         user2 = request.GET.get("user2")
@@ -34,6 +39,8 @@ class MessagesView(APIView):
         return Response(message.data, status=201)
 
 class MarkMessageAsReadView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def patch(self, request, message_id):
         try:
             message = Message.objects.get(message_id=message_id)
