@@ -4,6 +4,9 @@ from .models import Message
 from .serializers import MessageSerializers
 import json
  
+import logging
+logger = logging.getLogger(__name__)
+ 
 BOOTSTRAP_SERVERS = 'localhost:9092'
  
  
@@ -15,7 +18,7 @@ def consume_messages(topic_name, group_id, timeout=5):
     })
 
     c.subscribe([topic_name])
-    print(f"Consuming from topic '{topic_name}'...\n")
+    logger.info(f"Consuming from topic '{topic_name}'...\n")
 
     messages = []
 
@@ -38,7 +41,8 @@ def consume_messages(topic_name, group_id, timeout=5):
                 'timestamp': msg.timestamp()
             })
 
-            print(f"Received: {decoded_message} from {msg.topic()} [{msg.partition()}]")
+            logger.info(f"Received: {decoded_message} from {msg.topic()} [{msg.partition()}]")
+            
     finally:
         c.close()
     data = json.loads(decoded_message)
@@ -52,4 +56,5 @@ def consume_messages(topic_name, group_id, timeout=5):
         )
 
     serialized = MessageSerializers(message)
+    logger.info("Data is successfully added into the database")
     return serialized

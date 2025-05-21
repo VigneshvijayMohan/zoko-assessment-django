@@ -2,13 +2,16 @@ import json
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka import Producer
 
+import logging
+logger = logging.getLogger(__name__)
+
 BOOTSTRAP_SERVERS = 'localhost:9092'
 
 def create_topic_if_not_exists(topic_name, num_partitions=1, replication_factor=1):
     admin_client = AdminClient({'bootstrap.servers': BOOTSTRAP_SERVERS})
     metadata = admin_client.list_topics(timeout=10)
     if topic_name in metadata.topics:
-        print(f"Topic '{topic_name}' already exists.")
+        logger.info(f"Topic '{topic_name}' already exists.")
         return
 
     new_topic = NewTopic(topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
@@ -17,9 +20,9 @@ def create_topic_if_not_exists(topic_name, num_partitions=1, replication_factor=
     for topic, future in futures.items():
         try:
             future.result()
-            print(f"Topic '{topic}' created successfully.")
+            logger.info(f"Topic '{topic}' created successfully.")
         except Exception as e:
-            print(f"Failed to create topic {topic}: {e}")
+            logger.error(f"Failed to create topic {topic}: {e}")
 
 def produce_message(topic_name, message):
     create_topic_if_not_exists(topic_name)
@@ -27,9 +30,9 @@ def produce_message(topic_name, message):
 
     def delivery_report(err, msg):
         if err is not None:
-            print(f"Message delivery failed: {err}")
+            logger.error(f"Message delivery failed: {err}")
         else:
-            print(f"Message delivered to {msg.topic()} [{msg.partition()}]")
+            logger.info(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
     p.produce(topic_name, json.dumps(message).encode('utf-8'), callback=delivery_report)
     p.flush()

@@ -14,3 +14,12 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
+    class Meta:
+        indexes = [
+            models.Index(fields=['sender_id', 'receiver_id', 'timestamp']),
+            models.Index(fields=['message_id']),
+        ]
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.sender_id} -> {self.receiver_id}: {self.content[:20]}"
