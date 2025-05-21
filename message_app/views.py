@@ -3,6 +3,8 @@ from .serializers import MessageSerializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from .kafka_producer import produce_message
+from .kafka_worker import consume_messages
 # Create your views here.
 
 class MessagesView(APIView):
@@ -18,7 +20,6 @@ class MessagesView(APIView):
         return Response(serialized_data.data)
     def post(self, request):
         data = request.data
-
         sender_id = data.get("sender_id")
         receiver_id = data.get("receiver_id")
         content = data.get("content")
@@ -26,14 +27,11 @@ class MessagesView(APIView):
         if not sender_id or not receiver_id or not content:
             return Response({"error": "sender_id, receiver_id, and content are required."}, status=400)
 
-        message = Message.objects.create(
-            sender_id=sender_id,
-            receiver_id=receiver_id,
-            content=content
-        )
-
-        serialized = MessageSerializers(message)
-        return Response(serialized.data, status=201)
+        output_topic = "messages001"
+        group_id = "messages001"
+        produce_message(output_topic, data )
+        message = consume_messages(output_topic, group_id)
+        return Response(message.data, status=201)
 
 class MarkMessageAsReadView(APIView):
     def patch(self, request, message_id):
